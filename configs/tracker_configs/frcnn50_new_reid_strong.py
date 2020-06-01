@@ -13,10 +13,9 @@ root = {
         "cuda_visible_devices" : "0",
         #These paths will be appended to the PYTHONPATH. This needs to be done because the subprojects like mmdetection import from their relative
         #root path.
-        "source_root_paths" : ['feature_extractors/reid-strong-baseline',
+        "source_root_paths" : ['feature_extractors/reid_strong_baseline',
                                 'detectors/mmdetection'
                                ,'evaluation/py_motmetrics'],
-        "work_dirs" : "/media/philipp/philippkoehl_ssd/work_dirs/",
         "save_track_results" : True
 
     },
@@ -44,14 +43,11 @@ root = {
         "module_name" : "detectors.mmdetection_detector",
         "class_name" : "Mmdetection_detector",
 
-        "mmdetection_config" : "/media/philipp/philippkoehl_ssd/Dokumente/masterarbeit/JTA-MTMCT-Mod/deep_sort_mc/detectors/mmdetection/configs/faster_rcnn_r50_fpn_1x_gta.py",
-        "mmdetection_checkpoint_file" : "/media/philipp/philippkoehl_ssd/work_dirs/detector/faster_rcnn_gta22.07_epoch_5.pth",
+        "mmdetection_config" : "detectors/mmdetection/configs/faster_rcnn_r50_fpn_1x_gta.py",
+        "mmdetection_checkpoint_file" : "work_dirs/detector/faster_rcnn_gta22.07_epoch_5.pth",
         "device" : "cuda:0",
         #Remove all detections with a confidence less than min_confidence
         "min_confidence" : 0.8,
-        "detections_path" : "/media/philipp/philippkoehl_ssd/work_dirs/detector/detections"
-
-
 
     },
 
@@ -60,13 +56,12 @@ root = {
 
         "module_name" : "feature_extractors.reid_strong_extractor",
         "class_name" : "Reid_strong_extractor",
-        "features_path" : "/media/philipp/philippkoehl_ssd/work_dirs/feature_extractor/features",
 
         "feature_extractor_name" : "reid_strong_extractor"
 
             ,"reid_strong_extractor": {
-                "reid_strong_baseline_config": "//media/philipp/philippkoehl_ssd/Dokumente/masterarbeit/JTA-MTMCT-Mod/deep_sort_mc/feature_extractors/reid-strong-baseline/configs/softmax_triplet.yml",
-                "checkpoint_file": "/media/philipp/philippkoehl_ssd/work_dirs/feature_extractor/strong_reid_baseline/resnet50_model_reid_GTA_softmax_triplet.pth",
+                "reid_strong_baseline_config": "feature_extractors/reid_strong_baseline/configs/softmax_triplet.yml",
+                "checkpoint_file": "work_dirs/feature_extractor/strong_reid_baseline/resnet50_model_reid_GTA_softmax_triplet.pth",
                 "device": "cuda:0"
                 ,"visible_device" : "0"}
 

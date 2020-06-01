@@ -6,8 +6,7 @@ from utilities.helper import many_xyxy2xywh
 import numpy as np
 from utilities.helper import bboxes_round_int
 
-from mmdet.apis import show_result
-
+import os
 import mmcv
 
 class Mmdetection_detector(Base_detector):
@@ -22,8 +21,13 @@ class Mmdetection_detector(Base_detector):
         Base_detector.__init__(self, cfg)
         print("Mmdetection_detector init called")
 
-        self.detector_model = init_detector(self.cfg.detector.mmdetection_config
-                                            , self.cfg.detector.mmdetection_checkpoint_file
+        mmdetection_checkpoint_file = os.path.join(self.cfg.general.repository_root,self.cfg.detector.mmdetection_checkpoint_file)
+        mmdetection_config = os.path.join(self.cfg.general.repository_root,self.cfg.detector.mmdetection_config)
+
+
+
+        self.detector_model = init_detector(mmdetection_config
+                                            , mmdetection_checkpoint_file
                                             , device=self.cfg.detector.device)
 
         pass

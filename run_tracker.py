@@ -33,6 +33,8 @@ class Run_tracker:
 
         self.cfg.general.config_basename = os.path.basename(args.config).replace(".py","")
 
+        self.cfg.general.repository_root = os.path.abspath(os.path.dirname(__file__))
+
         #mmdetection does not put everything to the device that is being set in its function calls
         #E.g. With torch.cuda.set_device(4) it will run without errors. But still using GPU 0
         #With os.environ['CUDA_VISIBLE_DEVICES'] = '4' the visibility will be restricted to only the named GPUS starting internatlly from zero
@@ -40,7 +42,7 @@ class Run_tracker:
 
         append_to_pythonpath(self.cfg.general.source_root_paths,__file__)
 
-        print(sys.path)
+
 
         #Loads the detector module
         #E.g. detectors.faster_rcnn_resnet_50
@@ -68,26 +70,30 @@ class Run_tracker:
         logger.info(args)
         logger.info(json.dumps(self.cfg,sort_keys=True, indent=4))
 
-    def load_detections(self,cam_id):
-
-        detections_path_folder = os.path.join(self.cfg.detector.detections_path
+    def get_detections_path(self,cam_id):
+        detections_path_folder = os.path.join(self.config_run_path
                                               , self.cfg.general.config_basename)
         os.makedirs(detections_path_folder, exist_ok=True)
 
-        self.detections_path = os.path.join(detections_path_folder, "detections_cam_{}.csv".format(cam_id))
+        detections_path = os.path.join(detections_path_folder, "detections_cam_{}.csv".format(cam_id))
+        return detections_path
+
+    def load_detections(self,cam_id):
+
+        self.detections_path = self.get_detections_path(cam_id=cam_id)
+
         self.detections_loaded = pd.DataFrame([])
-        self.detections_to_store = pd.DataFrame([])
+        self.detections_to_store = {}
         if os.path.exists(self.detections_path):
             self.detections_loaded = pd.read_csv(self.detections_path)
         else:
-            self.detections_to_store = pd.DataFrame(
-                {"frame_no_cam": [], "id": [], "x": [], "y": [], "w": [], "h": [], "score": []})
+            self.detections_to_store = {}
 
 
     def set_tracker_config_run_path(self):
         #self.cfg.config_run_path
         # Build the path where results and logging files etc. should be stored
-        self.config_run_path = os.path.join(self.cfg.general.work_dirs, "tracker", "config_runs",self.cfg.general.config_basename)
+        self.config_run_path = os.path.join("work_dirs", "tracker", "config_runs",self.cfg.general.config_basename)
         os.makedirs(self.config_run_path, exist_ok=True)
 
 
@@ -113,13 +119,13 @@ class Run_tracker:
         for index, xywh_bbox_score in enumerate(zip(xywh_bboxes,scores)):
             xywh_bbox, score = xywh_bbox_score
 
-            self.detections_to_store = self.detections_to_store.append({ "frame_no_cam" : frame_no_cam
+            self.detections_to_store.append({ "frame_no_cam" : frame_no_cam
                                         , "id" : index
                                         , "x" : xywh_bbox[0]
                                         , "y" : xywh_bbox[1]
                                         , "w" : xywh_bbox[2]
                                         , "h" : xywh_bbox[3]
-                                        , "score" : score },ignore_index=True)
+                                        , "score" : score })
 
 
 
@@ -166,7 +172,7 @@ class Run_tracker:
 
 
     def run_on_dataset(self):
-        logger = logging.getLogger("deep_sort_mc")
+        logger = logging.getLogger("wda_tracker")
         logger.info("Starting tracking on dataset.")
 
         for cam_iterator in self.cam_image_iterators:

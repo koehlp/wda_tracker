@@ -17,6 +17,10 @@ class DeepSort(object):
         self.cfg = cfg
         feat_extractor_module = importlib.import_module(cfg.feature_extractor.module_name)
 
+        cfg.feature_extractor.reid_strong_extractor.reid_strong_baseline_config = os.path.join(cfg.general.repository_root
+                                                                                               ,cfg.feature_extractor.reid_strong_extractor.reid_strong_baseline_config)
+        cfg.feature_extractor.reid_strong_extractor.checkpoint_file = os.path.join(cfg.general.repository_root
+                                                                                   ,cfg.feature_extractor.reid_strong_extractor.checkpoint_file)
 
         if cfg.feature_extractor.feature_extractor_name == "abd_net_extractor":
             self.feature_extractor = getattr(feat_extractor_module,cfg.feature_extractor.class_name)(cfg.feature_extractor.abd_net_extractor)
