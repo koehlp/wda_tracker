@@ -55,7 +55,7 @@ class DeepSort(object):
         self.height, self.width = dataset_img.img.shape[:2]
         # generate detections
 
-        feature_pkl_path = os.path.join(self.feature_pickle_folder, dataset_img.image_name_no_ext + ".pkl")
+        feature_pkl_path = os.path.join(self.feature_pickle_folder, "frame_no_cam_{}_cam_id_{}.pkl".format(dataset_img.frame_no_cam,dataset_img.cam_id))
 
 
         if os.path.exists(feature_pkl_path):

@@ -23,7 +23,7 @@ import pandas as pd
 
 from feature_extractors.reid_strong_baseline.utils.logger import setup_logger
 
-from datasets.gta_dataset import get_cam_iterators
+from datasets.mta_dataset_cam_iterator import get_cam_iterators
 from detectors.mmdetection_detector import Mmdetection_detector
 
 class Run_tracker:
@@ -48,7 +48,7 @@ class Run_tracker:
         self.detector = Mmdetection_detector(self.cfg)
 
         # Initializes the dataset class by calling a function
-        self.cam_image_iterators = get_cam_iterators(self.cfg, self.cfg.data.source.base_folder, self.cfg.data.source.cam_ids)
+        self.cam_image_iterators = get_cam_iterators(self.cfg, self.cfg.data.source.cam_ids)
 
 
         self.deep_sort = DeepSort(self.cfg)
@@ -178,7 +178,6 @@ class Run_tracker:
         return os.path.join(tracker_results_folder,"track_results_{}.txt".format(cam_id))
 
 
-
     def run_on_dataset(self):
         logger = logging.getLogger("wda_tracker")
         logger.info("Starting tracking on dataset.")
@@ -195,7 +194,6 @@ class Run_tracker:
             self.load_detections(cam_iterator.cam_id)
 
             self.run_on_cam_images(cam_iterator)
-
 
             self.track_results_file.close()
 
