@@ -27,11 +27,21 @@ class DeepSort(object):
         else:
             self.feature_extractor = getattr(feat_extractor_module, cfg.feature_extractor.class_name)(cfg.feature_extractor)
 
+
         max_cosine_distance = max_dist
 
         nn_budget = cfg.tracker.nn_budget
         metric = NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
         self.tracker = Tracker(metric)
+
+        self.feature_pickle_folder = self.get_features_pickle_folder()
+
+
+    def get_features_pickle_folder(self):
+        feature_pickle_folder = os.path.join(self.cfg.general.config_run_path, "features")
+        os.makedirs(feature_pickle_folder, exist_ok=True)
+
+        return feature_pickle_folder
 
     def update(self, bboxes_xtylwh, confidences, dataset_img):
         '''
@@ -45,9 +55,7 @@ class DeepSort(object):
         self.height, self.width = dataset_img.img.shape[:2]
         # generate detections
 
-        feature_config_path = os.path.join(self.cfg.feature_extractor.features_path, self.cfg.general.config_basename)
-        os.makedirs(feature_config_path,exist_ok=True)
-        feature_pkl_path = os.path.join(feature_config_path, dataset_img.image_name_no_ext + ".pkl")
+        feature_pkl_path = os.path.join(self.feature_pickle_folder, dataset_img.image_name_no_ext + ".pkl")
 
 
         if os.path.exists(feature_pkl_path):

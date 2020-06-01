@@ -1,7 +1,3 @@
-#Faster R-CNN will be used as detector and the ckpt.t7 file from the deep_sort_pytorch website will be used as feature extractor
-import os
-
-
 root = {
 
     "general" : {
@@ -11,25 +7,16 @@ root = {
         #This is a trick to get everything onto the wanted gpus because just setting cuda:4 in the function calls will
         #not work for mmdetection. There will still be things on gpu cuda:0.
         "cuda_visible_devices" : "0",
-        #These paths will be appended to the PYTHONPATH. This needs to be done because the subprojects like mmdetection import from their relative
-        #root path.
-        "source_root_paths" : ['feature_extractors/reid_strong_baseline',
-                                'detectors/mmdetection'
-                               ,'evaluation/py_motmetrics'],
         "save_track_results" : True
 
     },
 
     "data" : {
-
-        "module_name" : "datasets.gta_dataset",
-        "function_name" : "get_gta_cam_iterators",
-        "selection_interval" : [0,10],
+        # To increase the speed while developing an specific interval of all frames can be set.
+        "selection_interval" : [0,100],
         "extension" : ".jpg",
 
         "source" : {
-            #To increase the speed while developing an specific interval of all frames can be set.
-
             "base_folder" : "/media/philipp/philippkoehl_ssd/GTA_ext_short/test",
             "cam_ids" : [0,1,2,3,4,5]
         }
@@ -39,9 +26,6 @@ root = {
 
 
     "detector" : {
-
-        "module_name" : "detectors.mmdetection_detector",
-        "class_name" : "Mmdetection_detector",
 
         "mmdetection_config" : "detectors/mmdetection/configs/faster_rcnn_r50_fpn_1x_gta.py",
         "mmdetection_checkpoint_file" : "work_dirs/detector/faster_rcnn_gta22.07_epoch_5.pth",

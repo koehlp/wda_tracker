@@ -1,18 +1,21 @@
+from trackers.utilities import append_to_pythonpath
+
+append_to_pythonpath(['feature_extractors/reid_strong_baseline',
+                                'detectors/mmdetection'
+                               ,'evaluation/py_motmetrics'], __file__)
+
 import argparse
 import mmcv
-import importlib
 from trackers.deep_sort import DeepSort
 from util import draw_bboxes
 from tqdm import tqdm
 from utilities.helper import xtylwh_to_xyxy
-import os
 import warnings
 import cv2
 import logging
 import json
 from utilities.track_result_statistics import count_tracks
 
-from utilities.non_daemonic_pool import NonDeamonicPool
 
 from trackers.utilities import *
 
@@ -20,10 +23,8 @@ import pandas as pd
 
 from feature_extractors.reid_strong_baseline.utils.logger import setup_logger
 
-from utilities.helper import TqdmToLogger
-
-
-
+from datasets.gta_dataset import get_cam_iterators
+from detectors.mmdetection_detector import Mmdetection_detector
 
 class Run_tracker:
     def __init__(self,args):
@@ -35,44 +36,33 @@ class Run_tracker:
 
         self.cfg.general.repository_root = os.path.abspath(os.path.dirname(__file__))
 
+        self.set_tracker_config_run_path()
+
         #mmdetection does not put everything to the device that is being set in its function calls
         #E.g. With torch.cuda.set_device(4) it will run without errors. But still using GPU 0
         #With os.environ['CUDA_VISIBLE_DEVICES'] = '4' the visibility will be restricted to only the named GPUS starting internatlly from zero
         os.environ['CUDA_VISIBLE_DEVICES'] = self.cfg.general.cuda_visible_devices
 
-        append_to_pythonpath(self.cfg.general.source_root_paths,__file__)
-
-
-
-        #Loads the detector module
-        #E.g. detectors.faster_rcnn_resnet_50
-        detector_module = importlib.import_module(self.cfg.detector.module_name)
 
         #Initializes the detector class by calling the constructor and creating the object
-        self.detector = getattr(detector_module,self.cfg.detector.class_name)(self.cfg)
-
-        # Loads the dataset module
-        self.dataset_module = importlib.import_module(self.cfg.data.module_name)
+        self.detector = Mmdetection_detector(self.cfg)
 
         # Initializes the dataset class by calling a function
-        self.cam_image_iterators = self.dataset_module.get_cam_iterators(self.cfg
-                                                                                  , self.cfg.data.source.base_folder
-                                                                                     , self.cfg.data.source.cam_ids)
-        self.set_tracker_config_run_path()
+        self.cam_image_iterators = get_cam_iterators(self.cfg, self.cfg.data.source.base_folder, self.cfg.data.source.cam_ids)
+
 
         self.deep_sort = DeepSort(self.cfg)
 
 
-
         #Set up the logger
-        logger = setup_logger("wda_tracker", self.config_run_path, 0)
+        logger = setup_logger("wda_tracker", self.cfg.general.config_run_path, 0)
 
         logger.info(args)
         logger.info(json.dumps(self.cfg,sort_keys=True, indent=4))
 
     def get_detections_path(self,cam_id):
-        detections_path_folder = os.path.join(self.config_run_path
-                                              , self.cfg.general.config_basename)
+        detections_path_folder = os.path.join(self.cfg.general.config_run_path
+                                              , "detections")
         os.makedirs(detections_path_folder, exist_ok=True)
 
         detections_path = os.path.join(detections_path_folder, "detections_cam_{}.csv".format(cam_id))
@@ -87,26 +77,29 @@ class Run_tracker:
         if os.path.exists(self.detections_path):
             self.detections_loaded = pd.read_csv(self.detections_path)
         else:
-            self.detections_to_store = {}
+            self.detections_to_store = []
 
 
     def set_tracker_config_run_path(self):
-        #self.cfg.config_run_path
+
         # Build the path where results and logging files etc. should be stored
-        self.config_run_path = os.path.join("work_dirs", "tracker", "config_runs",self.cfg.general.config_basename)
-        os.makedirs(self.config_run_path, exist_ok=True)
+
+        self.cfg.general.config_run_path = os.path.join(self.cfg.general.repository_root,"work_dirs", "tracker", "config_runs",self.cfg.general.config_basename)
+        os.makedirs(self.cfg.general.config_run_path, exist_ok=True)
 
 
     def save_detections(self):
         if len(self.detections_to_store) > 0:
-            self.detections_to_store = self.detections_to_store.astype({"frame_no_cam": int
+            detections_to_store_df = pd.DataFrame(self.detections_to_store)
+
+            detections_to_store_df = detections_to_store_df.astype({"frame_no_cam": int
                                                                            , "id": int
                                                                            , "x": int
                                                                            , "y": int
                                                                            , "w": int
                                                                            , "h": int
                                                                            , "score": float})
-            self.detections_to_store.to_csv(self.detections_path, index=False)
+            detections_to_store_df.to_csv(self.detections_path, index=False)
 
     def store_detections_one_frame(self, frame_no_cam, xywh_bboxes, scores):
         '''
@@ -169,16 +162,32 @@ class Run_tracker:
             self.pbar_tracker.update()
             self.img_callback(image)
 
+    @staticmethod
+    def get_cam_iterator_len_sum(cam_image_iterators):
+
+        overall_len = 0
+        for cam_iterator in cam_image_iterators:
+            overall_len += len(cam_iterator)
+        return overall_len
+
+    def get_track_results_path(self,cam_id):
+
+        tracker_results_folder =  os.path.join(self.cfg.general.config_run_path,"tracker_results")
+        os.makedirs(tracker_results_folder,exist_ok=True)
+
+        return os.path.join(tracker_results_folder,"track_results_{}.txt".format(cam_id))
+
 
 
     def run_on_dataset(self):
         logger = logging.getLogger("wda_tracker")
         logger.info("Starting tracking on dataset.")
+        self.pbar_tracker = tqdm(total=run_tracker.get_cam_iterator_len_sum(self.cam_image_iterators))
 
         for cam_iterator in self.cam_image_iterators:
             logger.info("Processing cam {}".format(cam_iterator.cam_id))
 
-            self.track_results_path = os.path.join(self.config_run_path, "track_results_{}.txt".format(cam_iterator.cam_id))
+            self.track_results_path = self.get_track_results_path(cam_iterator.cam_id)
             logger.info(self.track_results_path)
             self.track_results_file = open(self.track_results_path, 'w')
             print("frame_no_cam,cam_id,person_id,detection_idx,xtl,ytl,xbr,ybr", file=self.track_results_file)
