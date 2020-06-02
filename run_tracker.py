@@ -90,7 +90,7 @@ class Run_tracker:
 
         #This will assure that if the selection of frame nos is changed new detections have to be generated
         cam_iterator_frame_nos = cam_iterator.get_all_frame_nos()
-        frame_nos_union_length = len(set(detections_frame_nos_loaded["frame_no_cam"]).union(set(cam_iterator_frame_nos)))
+        frame_nos_union_length = len(set(detections_frame_nos_loaded["frame_no_cam"]).intersection(set(cam_iterator_frame_nos)))
         cam_iterator_frame_nos_length = len(cam_iterator_frame_nos)
 
         if frame_nos_union_length == cam_iterator_frame_nos_length and os.path.exists(self.detections_path):
