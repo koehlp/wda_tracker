@@ -13,7 +13,7 @@ root = {
 
     "data" : {
         # To increase the speed while developing an specific interval of all frames can be set.
-        "selection_interval" : [0,10000],
+        "selection_interval" : [0,2],
 
         "source" : {
             "base_folder" : "/media/philipp/philippkoehl_ssd/MTA_ext_short/test",
@@ -37,7 +37,7 @@ root = {
 
     "feature_extractor" : {
 
-        "feature_extractor_name" : "reid_strong_extractor"
+        "feature_extractor_name" : "abd_net_extractor"
 
             ,"reid_strong_extractor": {
                 "reid_strong_baseline_config": "feature_extractors/reid_strong_baseline/configs/softmax_triplet.yml",

@@ -65,12 +65,13 @@ class Mta_dataset_cam_iterator:
         self.current_frame_no = selection_start
 
 
-
+    def get_all_frame_nos(self):
+        return list(range(self.selection_interval[0],self.selection_interval[1]+1))
 
     def __len__(self):
         real_selection_end = min(int(self.video_capture.get(cv2.CAP_PROP_FRAME_COUNT)),self.selection_interval[1])
 
-        return real_selection_end - self.selection_interval[0]
+        return real_selection_end - self.selection_interval[0] + 1
 
 
 
@@ -89,7 +90,7 @@ class Mta_dataset_cam_iterator:
 
 
 if __name__ == "__main__":
-    cfg = mmcv.Config.fromfile("/home/philipp/Documents/repos/wda_tracker/configs/tracker_configs/frcnn50_new_reid_strong.py").root
+    cfg = mmcv.Config.fromfile("/home/philipp/Documents/repos/wda_tracker/configs/tracker_configs/frcnn50_new_abd.py").root
     mta_dataset = Mta_dataset_cam_iterator(cfg=cfg, cam_id=0)
     print("Dataset length {}".format(len(mta_dataset)))
     for dataset_image in mta_dataset:

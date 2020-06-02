@@ -7,6 +7,9 @@ import importlib
 import os
 import pickle
 
+from feature_extractors.reid_strong_extractor import Reid_strong_extractor
+from feature_extractors.abd_net_extractor import Abd_net_extractor
+
 __all__ = ['DeepSort']
 
 
@@ -15,17 +18,22 @@ class DeepSort(object):
     def __init__(self, cfg, max_dist=0.2):
 
         self.cfg = cfg
-        feat_extractor_module = importlib.import_module(cfg.feature_extractor.module_name)
 
+        #Create absolute paths for reid
         cfg.feature_extractor.reid_strong_extractor.reid_strong_baseline_config = os.path.join(cfg.general.repository_root
                                                                                                ,cfg.feature_extractor.reid_strong_extractor.reid_strong_baseline_config)
         cfg.feature_extractor.reid_strong_extractor.checkpoint_file = os.path.join(cfg.general.repository_root
                                                                                    ,cfg.feature_extractor.reid_strong_extractor.checkpoint_file)
 
+        cfg.feature_extractor.abd_net_extractor.load_weights = os.path.join(cfg.general.repository_root
+                                                                                   ,cfg.feature_extractor.abd_net_extractor.load_weights)
+
+
+
         if cfg.feature_extractor.feature_extractor_name == "abd_net_extractor":
-            self.feature_extractor = getattr(feat_extractor_module,cfg.feature_extractor.class_name)(cfg.feature_extractor.abd_net_extractor)
+            self.feature_extractor = Abd_net_extractor(cfg.feature_extractor.abd_net_extractor)
         else:
-            self.feature_extractor = getattr(feat_extractor_module, cfg.feature_extractor.class_name)(cfg.feature_extractor)
+            self.feature_extractor = Reid_strong_extractor(cfg.feature_extractor)
 
 
         max_cosine_distance = max_dist
@@ -35,6 +43,7 @@ class DeepSort(object):
         self.tracker = Tracker(metric)
 
         self.feature_pickle_folder = self.get_features_pickle_folder()
+
 
 
     def get_features_pickle_folder(self):

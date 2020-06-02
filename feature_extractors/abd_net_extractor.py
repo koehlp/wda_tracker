@@ -18,23 +18,15 @@ class Abd_net_extractor:
 
     def __init__(self,params):
 
-
-
         self.params = params
         self.use_gpu = True
         self.load_args()
-
-
 
         os.environ['CUDA_VISIBLE_DEVICES'] = self.args.gpu_devices
         self.load_model_weights()
         height = self.args.height
         width = self.args.width
         self.transform_test = build_transforms(height, width, is_train=False, data_augment="none")
-
-
-
-
 
 
     def load_args(self):

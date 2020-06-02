@@ -1,8 +1,9 @@
 from trackers.utilities import append_to_pythonpath
 
-append_to_pythonpath(['feature_extractors/reid_strong_baseline',
-                                'detectors/mmdetection'
-                               ,'evaluation/py_motmetrics'], __file__)
+append_to_pythonpath(['feature_extractors/reid_strong_baseline'
+                      ,'feature_extractors/ABD_Net'
+                        ,'detectors/mmdetection'
+                       ,'evaluation/py_motmetrics'], __file__)
 
 import argparse
 import mmcv
@@ -47,9 +48,6 @@ class Run_tracker:
         #Initializes the detector class by calling the constructor and creating the object
         self.detector = Mmdetection_detector(self.cfg)
 
-        # Initializes the dataset class by calling a function
-        self.cam_image_iterators = get_cam_iterators(self.cfg, self.cfg.data.source.cam_ids)
-
 
         self.deep_sort = DeepSort(self.cfg)
 
@@ -68,16 +66,37 @@ class Run_tracker:
         detections_path = os.path.join(detections_path_folder, "detections_cam_{}.csv".format(cam_id))
         return detections_path
 
-    def load_detections(self,cam_id):
+    def get_detections_frame_nos_path(self, cam_id):
+        detections_path_folder = os.path.join(self.cfg.general.config_run_path
+                                              , "detections")
+        os.makedirs(detections_path_folder, exist_ok=True)
 
-        self.detections_path = self.get_detections_path(cam_id=cam_id)
+        detections_path = os.path.join(detections_path_folder, "detections_frame_nos_cam_{}.csv".format(cam_id))
+        return detections_path
 
-        self.detections_loaded = pd.DataFrame([])
-        self.detections_to_store = {}
-        if os.path.exists(self.detections_path):
+    def load_detections(self,cam_iterator):
+
+        self.detections_to_store = []
+        self.detections_frame_nos = []
+        detections_frame_nos_loaded = pd.DataFrame({ "frame_no_cam" : []  })
+
+        self.detections_loaded = pd.DataFrame()
+        self.detections_path = self.get_detections_path(cam_id=cam_iterator.cam_id)
+        self.detections_frame_nos_path = self.get_detections_frame_nos_path(cam_id=cam_iterator.cam_id)
+
+        if os.path.exists(self.detections_frame_nos_path):
+            detections_frame_nos_loaded = pd.read_csv(self.detections_frame_nos_path)
+
+
+        #This will assure that if the selection of frame nos is changed new detections have to be generated
+        cam_iterator_frame_nos = cam_iterator.get_all_frame_nos()
+        frame_nos_union_length = len(set(detections_frame_nos_loaded["frame_no_cam"]).union(set(cam_iterator_frame_nos)))
+        cam_iterator_frame_nos_length = len(cam_iterator_frame_nos)
+
+        if frame_nos_union_length == cam_iterator_frame_nos_length and os.path.exists(self.detections_path):
             self.detections_loaded = pd.read_csv(self.detections_path)
-        else:
-            self.detections_to_store = []
+
+
 
 
     def set_tracker_config_run_path(self):
@@ -101,12 +120,17 @@ class Run_tracker:
                                                                            , "score": float})
             detections_to_store_df.to_csv(self.detections_path, index=False)
 
+            detections_frame_nos = pd.DataFrame(self.detections_frame_nos)
+            detections_frame_nos.to_csv(self.detections_frame_nos_path, index=False)
+
+
     def store_detections_one_frame(self, frame_no_cam, xywh_bboxes, scores):
         '''
         "frame_no_cam,id,x,y,w,h,score"
         :param xywh_bboxes:
         :return:
         '''
+
 
 
         for index, xywh_bbox_score in enumerate(zip(xywh_bboxes,scores)):
@@ -132,6 +156,7 @@ class Run_tracker:
         else:
             bboxes_xtlytlwh, scores = self.detector.detect(dataset_img.img)
             self.store_detections_one_frame(dataset_img.frame_no_cam, bboxes_xtlytlwh, scores)
+            self.detections_frame_nos.append({ "frame_no_cam" : dataset_img.frame_no_cam })
 
 
         draw_img = dataset_img.img
@@ -181,9 +206,14 @@ class Run_tracker:
     def run_on_dataset(self):
         logger = logging.getLogger("wda_tracker")
         logger.info("Starting tracking on dataset.")
-        self.pbar_tracker = tqdm(total=run_tracker.get_cam_iterator_len_sum(self.cam_image_iterators))
 
-        for cam_iterator in self.cam_image_iterators:
+        cam_iterators = get_cam_iterators(self.cfg, self.cfg.data.source.cam_ids)
+        frame_count_all_cams = self.get_cam_iterator_len_sum(cam_iterators)
+        self.pbar_tracker = tqdm(total=frame_count_all_cams)
+
+
+
+        for cam_iterator in cam_iterators:
             logger.info("Processing cam {}".format(cam_iterator.cam_id))
 
             self.track_results_path = self.get_track_results_path(cam_iterator.cam_id)
@@ -191,7 +221,7 @@ class Run_tracker:
             self.track_results_file = open(self.track_results_path, 'w')
             print("frame_no_cam,cam_id,person_id,detection_idx,xtl,ytl,xbr,ybr", file=self.track_results_file)
 
-            self.load_detections(cam_iterator.cam_id)
+            self.load_detections(cam_iterator)
 
             self.run_on_cam_images(cam_iterator)
 
