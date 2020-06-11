@@ -1,60 +1,60 @@
 
-import os
-
-
 
 root = {
 
         "work_dirs" : "/media/philipp/philippkoehl_ssd/work_dirs"
-        ,"train_track_results_folder" : "/media/philipp/philippkoehl_ssd/work_dirs/config_runs/faster_rcnn_r50_gta_trained_strong_reid_GtaExtShort_train"
-        ,"test_track_results_folder" : "/media/philipp/philippkoehl_ssd/work_dirs/config_runs/faster_rcnn_r50_gta_trained_strong_reid_GtaExtShort_test"
-        ,"train_dataset_folder" : "/media/philipp/philippkoehl_ssd/GTA_ext_short/train"
-        ,"test_dataset_folder" : "/media/philipp/philippkoehl_ssd/GTA_ext_short/test"
-        , "cam_count" : 6
-        , "person_identifier" : "person_id"
-        , "config_basename" : os.path.basename(__file__).replace(".py","")
-        , "config_run_path" : "/media/philipp/philippkoehl_ssd/work_dirs/clustering/config_runs"
+        ,"train_track_results_folder" : "/home/philipp/Documents/repos/wda_tracker/work_dirs/tracker/config_runs/frcnn50_new_abd/tracker_results"
+        ,"test_track_results_folder" : "/home/philipp/Documents/repos/wda_tracker/work_dirs/tracker/config_runs/frcnn50_new_abd/tracker_results"
+        ,"train_dataset_folder" : "/media/philipp/philippkoehl_ssd/MTA_ext_short/train"
+        ,"test_dataset_folder" : "/media/philipp/philippkoehl_ssd/MTA_ext_short/test"
+        ,"cam_count" : 6
 
-        , "max_memory_in_gb": 200
-        , "min_free_memory_in_gb": 0
-        , "memory_watchdog_interval": 0.5
+        ,"feature_extractor": {
 
+               "feature_extractor_name": "abd_net_extractor"
 
-        ,"feature_extractor_cfg_dict": {
+               , "reid_strong_extractor": {
+                   "reid_strong_baseline_config": "feature_extractors/reid_strong_baseline/configs/softmax_triplet.yml",
+                   "checkpoint_file": "work_dirs/feature_extractor/strong_reid_baseline/resnet50_model_reid_GTA_softmax_triplet.pth",
+                   "device": "cuda:0"
+                   , "visible_device": "0"}
 
-            "feature_extractor_name" : "abd_net_extractor"
-
-            ,"reid_strong_extractor": {
-                "reid_strong_baseline_config": "/home/philipp/Dokumente/masterarbeit/JTA-MTMCT-Mod/deep_sort_mc/feature_extractors/reid-strong-baseline/configs/softmax_triplet.yml",
-                "checkpoint_file": "/media/philipp/philippkoehl_ssd/work_dirs/feature_extractor/strong_reid_baseline/resnet50_model_reid_GTA_softmax_triplet.pth",
-                "device": "cuda:0"
-                ,"visible_device" : "0"}
-
-            ,"abd_net_extractor" : dict(abd_dan=['cam', 'pam'], abd_dan_no_head=False, abd_dim=1024, abd_np=2, adam_beta1=0.9,
-                  adam_beta2=0.999, arch='resnet50', branches=['global', 'abd'], compatibility=False, criterion='htri',
-                  cuhk03_classic_split=False, cuhk03_labeled=False, dan_dan=[], dan_dan_no_head=False, dan_dim=1024,
-                  data_augment=['crop,random-erase'], day_only=False, dropout=0.5, eval_freq=5, evaluate=False,
-                  fixbase=False, fixbase_epoch=10, flip_eval=False, gamma=0.1, global_dim=1024,
-                  global_max_pooling=False, gpu_devices='0', height=384, htri_only=False, label_smooth=True,
-                  lambda_htri=0.1, lambda_xent=1, lr=0.0003, margin=1.2, max_epoch=80, min_height=-1,
-                  momentum=0.9, night_only=False, np_dim=1024, np_max_pooling=False, np_np=2, np_with_global=False,
-                  num_instances=4, of_beta=1e-06, of_position=['before', 'after', 'cam', 'pam', 'intermediate'],
-                  of_start_epoch=23, open_layers=['classifier'], optim='adam', ow_beta=0.001,
-                  pool_tracklet_features='avg', print_freq=10, resume='', rmsprop_alpha=0.99
-                  , load_weights='/media/philipp/philippkoehl_ssd/work_dirs/feature_extractor/abd-net/checkpoint_ep30_non_clean.pth.tar'
-                  , root='/media/philipp/philippkoehl_ssd/work_dirs/datasets'
-                       , sample_method='evenly'
-                       , save_dir='/media/philipp/philippkoehl_ssd/work_dirs/feature_extractor/abd-net/log/eval-resnet50'
-                       , seed=1, seq_len=15,
-                  sgd_dampening=0, sgd_nesterov=False, shallow_cam=True, source_names=['mta_ext'], split_id=0,
-                  start_epoch=0, start_eval=0, stepsize=[20, 40], target_names=['market1501'],
-                  test_batch_size=100, train_batch_size=64, train_sampler='', use_avai_gpus=False, use_cpu=False,
-                  use_metric_cuhk03=False, use_of=True, use_ow=True, visualize_ranks=False, weight_decay=0.0005,
-                  width=128, workers=4)
+               , "abd_net_extractor": dict(abd_dan=['cam', 'pam'], abd_dan_no_head=False, abd_dim=1024, abd_np=2,
+                                           adam_beta1=0.9,
+                                           adam_beta2=0.999, arch='resnet50', branches=['global', 'abd'],
+                                           compatibility=False, criterion='htri',
+                                           cuhk03_classic_split=False, cuhk03_labeled=False, dan_dan=[],
+                                           dan_dan_no_head=False, dan_dim=1024,
+                                           data_augment=['crop,random-erase'], day_only=False, dropout=0.5, eval_freq=5,
+                                           evaluate=False,
+                                           fixbase=False, fixbase_epoch=10, flip_eval=False, gamma=0.1, global_dim=1024,
+                                           global_max_pooling=False, gpu_devices='0', height=384, htri_only=False,
+                                           label_smooth=True,
+                                           lambda_htri=0.1, lambda_xent=1, lr=0.0003, margin=1.2, max_epoch=80,
+                                           min_height=-1,
+                                           momentum=0.9, night_only=False, np_dim=1024, np_max_pooling=False, np_np=2,
+                                           np_with_global=False,
+                                           num_instances=4, of_beta=1e-06,
+                                           of_position=['before', 'after', 'cam', 'pam', 'intermediate'],
+                                           of_start_epoch=23, open_layers=['classifier'], optim='adam', ow_beta=0.001,
+                                           pool_tracklet_features='avg', print_freq=10, resume='', rmsprop_alpha=0.99
+                                           ,
+                                           load_weights='work_dirs/feature_extractor/abd-net/checkpoint_ep30_non_clean.pth.tar'
+                                           , root='work_dirs/datasets'
+                                           , sample_method='evenly'
+                                           , save_dir='work_dirs/feature_extractor/abd-net/log/eval-resnet50'
+                                           , seed=1, seq_len=15,
+                                           sgd_dampening=0, sgd_nesterov=False, shallow_cam=True,
+                                           source_names=['mta_ext'], split_id=0,
+                                           start_epoch=0, start_eval=0, stepsize=[20, 40], target_names=['market1501'],
+                                           test_batch_size=100, train_batch_size=64, train_sampler='',
+                                           use_avai_gpus=False, use_cpu=False,
+                                           use_metric_cuhk03=False, use_of=True, use_ow=True, visualize_ranks=False,
+                                           weight_decay=0.0005,
+                                           width=128, workers=4)
 
 
         }
-
         ,"cluster_from_weights" : {
 
             "split_count": 1

@@ -230,21 +230,11 @@ def load_ground_truth_dataframes(dataset_folder,working_dir,cam_ids):
     # load ground truth data for each cam
     ground_truth_dataframes = []
     for cam_id in cam_ids:
-        cam_coords_path = osp.join(dataset_folder, "cam_{}/".format(cam_id), "coords_cam_{}.csv".format(cam_id))
+        cam_coords_path = osp.join(dataset_folder, "cam_{}/".format(cam_id), "coords_fib_cam_{}.csv".format(cam_id))
 
         cam_coords = pandas_loader.load_csv(working_dir, cam_coords_path)
 
-        # In old csv files it was called ped_id than another id was used: person_id
-        if "ped_id" in cam_coords.columns:
-            person_identifier = "ped_id"
-        else:
-            person_identifier = "person_id"
-
-        cam_coords = cam_coords.groupby(["frame_no_gta", person_identifier], as_index=False).mean()
-
-        cam_coords = adjustCoordsTypes(cam_coords, person_identifier=person_identifier)
-
-        cam_coords = drop_unnecessary_columns(cam_coords)
+        cam_coords = adjustCoordsTypes(cam_coords, person_identifier="person_id")
 
         ground_truth_dataframes.append(cam_coords)
 

@@ -1,4 +1,11 @@
 
+from utilities.python_path_utility import append_to_pythonpath
+
+append_to_pythonpath(['feature_extractors/reid_strong_baseline'
+                      ,'feature_extractors/ABD_Net'
+                        ,'detectors/mmdetection'
+                       ,'evaluation/py_motmetrics'], __file__)
+
 import os
 os.environ["OMP_NUM_THREADS"] = "3" # export OMP_NUM_THREADS=4
 os.environ["OPENBLAS_NUM_THREADS"] = "3" # export OPENBLAS_NUM_THREADS=4
@@ -6,50 +13,32 @@ os.environ["MKL_NUM_THREADS"] = "3" # export MKL_NUM_THREADS=6
 os.environ["VECLIB_MAXIMUM_THREADS"] = "3" # export VECLIB_MAXIMUM_THREADS=4
 os.environ["NUMEXPR_NUM_THREADS"] = "3" # export NUMEXPR_NUM_THREADS=6
 
-import sys
-
-def append_to_pythonpath(paths):
-    for path in paths:
-        sys.path.append(path)
-
-
-append_to_pythonpath(['/home/koehlp/Dokumente/JTA-MTMCT-Mod/deep_sort_mc/clustering',
-                      '/home/koehlp/Dokumente/JTA-MTMCT-Mod/deep_sort_mc',
-                      '/home/koehlp/Dokumente/JTA-MTMCT-Mod/deep_sort_mc/detectors/mmdetection',
-                      '/home/koehlp/Dokumente/JTA-MTMCT-Mod/deep_sort_mc/trackers/iou_tracker',
-                      '/home/koehlp/Dokumente/JTA-MTMCT-Mod/deep_sort_mc/evaluation/py_motmetrics',
-                      '/home/koehlp/Dokumente/JTA-MTMCT-Mod/deep_sort_mc/feature_extractors/reid-strong-baseline',
-                      '/home/koehlp/anaconda3/envs/reid-baseline1/lib/python37.zip',
-                      '/home/koehlp/anaconda3/envs/reid-baseline1/lib/python3.7',
-                      '/home/koehlp/anaconda3/envs/reid-baseline1/lib/python3.7/lib-dynload',
-                      '/home/koehlp/anaconda3/envs/reid-baseline1/lib/python3.7/site-packages',
-                      '/home/koehlp/Dokumente/JTA-MTMCT-Mod/deep_sort_mc/clustering',
-                      '/home/koehlp/anaconda3/envs/reid-baseline1/lib/python37.zip',
-                      '/home/koehlp/anaconda3/envs/reid-baseline1/lib/python3.7',
-                      '/home/koehlp/anaconda3/envs/reid-baseline1/lib/python3.7/lib-dynload',
-                      '/home/koehlp/anaconda3/envs/reid-baseline1/lib/python3.7/site-packages',
-                      '/home/koehlp/Dokumente/JTA-MTMCT-Mod/deep_sort_mc/detectors/mmdetection',
-                      '/home/koehlp/Dokumente/JTA-MTMCT-Mod/deep_sort_mc/feature_extractors/ABD_Net'])
-
 import argparse
 import mmcv
-from utils.logger import setup_logger
+from feature_extractors.reid_strong_baseline.utils.logger import setup_logger
 import json
 
 from clustering.multi_cam_clustering import splitted_clustering_from_weights, find_clustering_weights
 
 
-class Run_clustering:
+class Run_multi_cam_clustering:
     def __init__(self,args):
 
         self.cfg = mmcv.Config.fromfile(args.config).root
 
         self.cfg.config_basename = os.path.basename(args.config).replace(".py","")
 
-        config_run_path = os.path.join(self.cfg.config_run_path, self.cfg.config_basename)
-        setattr(self.cfg, "config_run_path", config_run_path)
+        self.cfg.repository_root = os.path.abspath(os.path.dirname(__file__))
 
-        os.makedirs(config_run_path,exist_ok=True)
+
+        self.cfg.config_run_path = os.path.join(self.cfg.repository_root
+                                                , "work_dirs"
+                                                , "clustering"
+                                                , "config_runs"
+                                                , self.cfg.config_basename)
+
+
+        os.makedirs(self.cfg.config_run_path,exist_ok=True)
 
         logger = setup_logger("clustering_logger", self.cfg.config_run_path, 0)
 
@@ -61,7 +50,7 @@ class Run_clustering:
 
     def run(self):
 
-        feature_ext_cfg = mmcv.Config(self.cfg.feature_extractor_cfg_dict)
+        feature_ext_cfg = mmcv.Config(self.cfg.feature_extractor)
 
 
         if self.cfg.find_weights.run:
@@ -93,7 +82,7 @@ class Run_clustering:
                                              , best_weights_path=self.cfg.cluster_from_weights.best_weights_path
                                              , default_weights=self.cfg.cluster_from_weights.default_weights
                                              , config_basename=self.cfg.config_basename
-                                             , person_identifier=self.cfg.person_identifier
+                                             , person_identifier="person_id"
                                              , n_split_parts=self.cfg.cluster_from_weights.split_count
                                              )
 
@@ -115,7 +104,7 @@ if __name__=="__main__":
 
     args = parse_args()
 
-    run_clustering = Run_clustering(args)
+    run_clustering = Run_multi_cam_clustering(args)
 
 
     run_clustering.run()

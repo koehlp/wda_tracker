@@ -1,4 +1,4 @@
-from trackers.utilities import append_to_pythonpath
+from utilities.python_path_utility import append_to_pythonpath
 
 append_to_pythonpath(['feature_extractors/reid_strong_baseline'
                       ,'feature_extractors/ABD_Net'
@@ -18,7 +18,7 @@ import json
 from utilities.track_result_statistics import count_tracks
 
 
-from trackers.utilities import *
+from utilities.python_path_utility import *
 
 import pandas as pd
 
@@ -103,7 +103,11 @@ class Run_tracker:
 
         # Build the path where results and logging files etc. should be stored
 
-        self.cfg.general.config_run_path = os.path.join(self.cfg.general.repository_root,"work_dirs", "tracker", "config_runs",self.cfg.general.config_basename)
+        self.cfg.general.config_run_path = os.path.join(self.cfg.general.repository_root
+                                                        ,"work_dirs"
+                                                        , "tracker"
+                                                        , "config_runs"
+                                                        , self.cfg.general.config_basename)
         os.makedirs(self.cfg.general.config_run_path, exist_ok=True)
 
 

@@ -403,41 +403,7 @@ def drop_unnecessary_columns(coords_file:pd.DataFrame):
 
 def adjustCoordsTypes(coords,person_identifier="ped_id"):
 
-    return coords.astype({"frame_no_gta": "int32"
-                                         , "frame_no_cam": "int32"
-                                         , person_identifier: "int32"
-                                         , "appearance_id": "int32"
-                                         , "joint_type" : "int32"
-                                         , "x_2D_joint": "float32"
-                                         , "y_2D_joint": "float32"
-                                         , "x_3D_joint": "float32"
-                                         , "y_3D_joint": "float32"
-                                         , "z_3D_joint": "float32"
-                                         , "joint_occluded": "int32"
-                                         , "joint_self_occluded": "int32"
-                                         , "x_3D_cam": "float32"
-                                         , "y_3D_cam": "float32"
-                                         , "z_3D_cam": "float32"
-                                         , "x_rot_cam": "float32"
-                                         , "y_rot_cam": "float32"
-                                         , "z_rot_cam": "float32"
-                                         , "fov": "int32"
-                                         , "x_3D_person": "float32"
-                                         , "y_3D_person": "float32"
-                                         , "z_3D_person": "float32"
-                                         , "x_2D_person": "float32"
-                                         , "y_2D_person": "float32"
-                                         , "ped_type": "int32"
-                                         , "wears_glasses" : "int32"
-                                         , "yaw_person": "float32"
-                                         , "hours_gta": "int32"
-                                         , "minutes_gta": "int32"
-                                         , "seconds_gta": "int32"
-                                         , "x_top_left_BB": "float32"
-                                         , "y_top_left_BB": "float32"
-                                         , "x_bottom_right_BB": "float32"
-                                         , "y_bottom_right_BB": "float32"
-                                      })
+    return coords.astype(int)
 
 if __name__ == "__main__":
     #arr = np.array([[1.2,2.3,4.,5.],[1.6,2.1,4.,5.]])
