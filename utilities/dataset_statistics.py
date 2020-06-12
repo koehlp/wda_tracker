@@ -290,7 +290,7 @@ def get_combined_dataframe(dataset_path,working_dirs,cam_ids,frame_count_per_cam
 
         if isinstance(dataset_path,str):
 
-            cam_path = os.path.join(dataset_path, "cam_{}/".format(cam_id), "coords_cam_{}.csv".format(cam_id))
+            cam_path = os.path.join(dataset_path, "cam_{}/".format(cam_id), "coords_fib_cam_{}.csv".format(cam_id))
 
             cam_coords = load_csv(working_dirs, cam_path)
 
@@ -299,8 +299,6 @@ def get_combined_dataframe(dataset_path,working_dirs,cam_ids,frame_count_per_cam
 
         else:
             cam_coords = dataset_path[cam_id]
-
-        cam_coords = cam_coords.groupby(["frame_no_gta", person_identifier], as_index=False).mean()
 
         cam_coords = cam_coords[["frame_no_cam"
             , person_identifier

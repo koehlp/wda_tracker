@@ -91,7 +91,7 @@ def load_tracks_all_cams(cam_count, track_results_folder):
     return track_result_dataframes
 
 def pickle_all_reid_features(work_dirs
-                             ,feature_extractor_cfg
+                             ,mc_cfg
                              ,track_results_folder
                              ,dataset_folder
                              ,config_basename
@@ -132,7 +132,7 @@ def pickle_all_reid_features(work_dirs
 
             if not os.path.exists(feature_pickle_filename):
                 if len(feature_extraction) == 0:
-                    feature_extraction.append(Feature_extraction(feature_extractor_cfg))
+                    feature_extraction.append(Feature_extraction(mc_cfg))
 
 
                 frame_im = mmcv.imread(im_path)
@@ -1277,7 +1277,7 @@ def find_clustering_weights(test_track_results_folder
                              , work_dirs
                              , test_dataset_folder
                              , train_dataset_folder
-                             , feature_extractor_cfg
+                             , mc_cfg
                              , cam_count
                              , dist_name_to_distance_weights
                              , weight_search_configs
@@ -1300,7 +1300,7 @@ def find_clustering_weights(test_track_results_folder
 
 
     pickle_all_reid_features(work_dirs=work_dirs
-                             , feature_extractor_cfg=feature_extractor_cfg
+                             , mc_cfg=mc_cfg
                              , track_results_folder=train_track_results_dataframes
                              , dataset_folder=train_dataset_folder
                              , config_basename=config_basename
@@ -1334,7 +1334,7 @@ def splitted_clustering_from_weights(test_track_results_folder
                                      , work_dirs
                                      , test_dataset_folder
                                      , train_dataset_folder
-                                     , feature_extractor_cfg
+                                     , mc_cfg
                                      , cam_count
                                      , best_weights_path
                                      , default_weights
@@ -1485,7 +1485,7 @@ def splitted_clustering_from_weights(test_track_results_folder
         )
 
         pickle_all_reid_features(work_dirs=work_dirs
-                                 , feature_extractor_cfg=feature_extractor_cfg
+                                 , mc_cfg=mc_cfg
                                  , track_results_folder=test_chunk_tr
                                  , dataset_folder=test_dataset_folder
                                  , config_basename=config_basename

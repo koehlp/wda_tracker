@@ -50,8 +50,6 @@ class Run_multi_cam_clustering:
 
     def run(self):
 
-        feature_ext_cfg = mmcv.Config(self.cfg.feature_extractor)
-
 
         if self.cfg.find_weights.run:
             find_clustering_weights(test_track_results_folder=self.cfg.test_track_results_folder
@@ -59,7 +57,7 @@ class Run_multi_cam_clustering:
                                              , work_dirs=self.cfg.work_dirs
                                              , test_dataset_folder=self.cfg.test_dataset_folder
                                              , train_dataset_folder=self.cfg.train_dataset_folder
-                                             , feature_extractor_cfg=feature_ext_cfg
+                                             , mc_cfg=self.cfg
                                              , cam_count=self.cfg.cam_count
                                              , take_frames_per_cam=self.cfg.find_weights.take_frames_per_cam
                                              , weight_search_configs=self.cfg.find_weights.weight_search_configs
@@ -77,7 +75,7 @@ class Run_multi_cam_clustering:
                                              , work_dirs=self.cfg.work_dirs
                                              , test_dataset_folder=self.cfg.test_dataset_folder
                                              , train_dataset_folder=self.cfg.train_dataset_folder
-                                             , feature_extractor_cfg=feature_ext_cfg
+                                             , mc_cfg=self.cfg
                                              , cam_count=self.cfg.cam_count
                                              , best_weights_path=self.cfg.cluster_from_weights.best_weights_path
                                              , default_weights=self.cfg.cluster_from_weights.default_weights

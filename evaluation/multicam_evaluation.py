@@ -14,7 +14,7 @@ from utilities.non_daemonic_pool import NonDeamonicPool,NoDaemonProcess
 from utilities.helper import constraint_point_to_img_dims, drop_unnecessary_columns
 from utilities.helper import rename_short_motmetrics
 import os.path as osp
-from utilities.helper import get_all_frame_numbers
+from utilities.helper import get_all_frame_numbers_via_videos
 
 
 
@@ -244,7 +244,7 @@ def split_data(dataset_folder,track_results_folder,working_dir, n_split_parts, c
 
     def get_splitted_dataframes(n_split_parts,cam_dataframes):
         chunk_id_to_chunks_per_cam = defaultdict(list)
-        frame_nos_cam = get_all_frame_numbers(dataset_folder,cam_ids)
+        frame_nos_cam = get_all_frame_numbers_via_videos(dataset_folder,cam_ids)
 
         frame_no_cams_splitted = np.array_split(frame_nos_cam,n_split_parts)
 

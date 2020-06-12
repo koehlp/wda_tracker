@@ -17,9 +17,13 @@ ABD-Net (https://github.com/TAMU-VITA/ABD-Net).
 For multi person single camera tracking it contains DeepSort from (https://github.com/ZQPei/deep_sort_pytorch) 
 which is originally from (https://github.com/nwojke/deep_sort).
 
-For clustering stuff from (https://github.com/ZwEin27/Hierarchical-Clustering) is contained.
+Stuff from (https://github.com/ZwEin27/Hierarchical-Clustering) is used for clustering.
 
 For evaluation the py-motmetrics is contained (https://github.com/cheind/py-motmetrics).
+
+There is also an approach for getting distinct colors:
+
+(https://github.com/taketwo/glasbey).
 
 
  

@@ -11,6 +11,9 @@ from math import ceil
 from datetime import timedelta
 import os
 from utilities.pandas_loader import load_csv
+
+import cv2
+
 def atoi(text):
     return int(text) if text.isdigit() else text
 
@@ -97,7 +100,7 @@ def get_all_frame_numbers(dataset_folder,cam_ids):
     '''
 
     #Any cam can be used
-    dataset_cam_folder = os.path.join(dataset_folder, "cam_{}/".format(cam_ids[0]))
+    dataset_cam_folder = os.path.join(dataset_folder, "cam_{}/".format(cam_ids[0]),)
     cam_folder_filenames = os.listdir(dataset_cam_folder)
     #image_{frame_no_cam}_{cam_id}.jpg
     cam_folder_images = [ filename for filename in  cam_folder_filenames if filename.endswith(".jpg")]
@@ -107,6 +110,22 @@ def get_all_frame_numbers(dataset_folder,cam_ids):
 
     return frame_nos_cam
 
+def get_all_frame_numbers_via_videos(dataset_folder,cam_ids):
+    '''
+    Because the coord csv files only contain frame nubmers with people visible, the images have to be used to
+    find all frame numbers.
+    :param dataset_folder:
+    :return:
+    '''
+
+    #Any cam can be used
+    cam_video_path = os.path.join(dataset_folder, "cam_{}/".format(cam_ids[0]), "cam_{}.mp4".format(cam_ids[0]))
+
+    video_capture = cv2.VideoCapture(cam_video_path)
+    frame_count = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
+    frame_nos_cam = list(range(frame_count))
+
+    return frame_nos_cam
 
 def get_track_results_and_dataset(track_results_folder, dataset_folder, working_dir, cam_count, until_frame_no):
 
