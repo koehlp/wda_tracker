@@ -13,7 +13,7 @@ root = {
 
     "data" : {
         # To increase the speed while developing an specific interval of all frames can be set.
-        "selection_interval" : [0,30],
+        "selection_interval" : [0,10000],
 
         "source" : {
             "base_folder" : "/media/philipp/philippkoehl_ssd/MTA_ext_short/test",

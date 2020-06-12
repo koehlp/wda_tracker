@@ -80,18 +80,13 @@ class Motmetrics_evaluation:
     def initialize_base(self,ground_truth,working_dir_path):
         # Create an accumulator that will be updated during each frame
         self.acc = mm.MOTAccumulator(auto_id=True)
+        self.ground_truth = ground_truth
 
         if isinstance(ground_truth,str):
             self.ground_truth = pandas_loader.load_csv(working_dir_path,ground_truth)
 
-        # In old csv files it was called ped_id than another id was used: person_id
-        if "ped_id" in self.ground_truth.columns:
-            self.ground_truth = self.ground_truth.groupby(["frame_no_gta", "ped_id"], as_index=False).mean()
-        else:
-            self.ground_truth = self.ground_truth.groupby(["frame_no_gta", "person_id"], as_index=False).mean()
 
-        self.gt_frame_numbers_cam = self.ground_truth.groupby("frame_no_cam", as_index=False).mean()
-        self.gt_frame_numbers_cam = self.gt_frame_numbers_cam["frame_no_cam"].tolist()
+        self.gt_frame_numbers_cam = set(self.ground_truth["frame_no_cam"].tolist())
 
         self.gt_frame_numbers_cam = list(map(int, self.gt_frame_numbers_cam))
 
@@ -106,7 +101,7 @@ class Motmetrics_evaluation:
 
         self.initialize_base(self.ground_truth,self.working_dir)
 
-        pool = ThreadPool(processes=80)
+        pool = ThreadPool(processes=10)
         pbar = tqdm(total=len(self.gt_frame_numbers_cam))
         gt_tr_objects_distances = []
         for frame_no_cam in self.gt_frame_numbers_cam: #Will go through all frame_number of one cam
@@ -116,13 +111,7 @@ class Motmetrics_evaluation:
 
             tr_objects_this_frame = tr_rows_this_frame["person_id"].tolist()
 
-
-
-            #In old csv files it was called ped_id than another id was used: person_id
-            if "ped_id" in gt_rows_this_frame.columns:
-                gt_objects_this_frame = gt_rows_this_frame["ped_id"].tolist()
-            else:
-                gt_objects_this_frame = gt_rows_this_frame["person_id"].tolist()
+            gt_objects_this_frame = gt_rows_this_frame["person_id"].tolist()
 
 
 
@@ -220,7 +209,7 @@ def evaluate_one_cam_task(ground_truth,track_results,working_dir,cam_id):
     try:
 
         if isinstance(ground_truth, str):
-            ground_truth = os.path.join(ground_truth, "cam_{}".format(cam_id), "coords_cam_{}.csv".format(cam_id))
+            ground_truth = os.path.join(ground_truth, "cam_{}".format(cam_id), "coords_fib_cam_{}.csv".format(cam_id))
 
         if isinstance(track_results,str):
             track_results = os.path.join(track_results, "track_results_{}.txt".format(cam_id))

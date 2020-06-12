@@ -22,7 +22,6 @@ from utilities.helper import rename_short_motmetrics
 from evaluation.multicam_evaluation import Multicam_evaluation, Motmetrics_distance
 import pickle
 from evaluation.motmetrics_evaluation import eval_single_cam_multiple_cams
-from clustering.multicam_graph import create_multicam_graph,get_different_cam_edge_nodes,calculate_track_velocity
 import multiprocessing
 
 
@@ -42,11 +41,11 @@ def get_feature_pickle_folder(work_dirs, config_basename, dataset_type):
     return feature_pickle_folder
 
 
-def get_feature_pickle_path(work_dirs, image_name, config_basename, dataset_type):
+def get_feature_pickle_path(work_dirs, frame_no_cam, cam_id, config_basename, dataset_type):
     feature_pickle_folder = get_feature_pickle_folder(work_dirs, config_basename, dataset_type)
 
     os.makedirs(feature_pickle_folder, exist_ok=True)
-    feature_pickle_filename = os.path.join(feature_pickle_folder, image_name.replace(".jpg", ".pkl"))
+    feature_pickle_filename = os.path.join(feature_pickle_folder, "frameno_{}_camid_{}.pkl".format(frame_no_cam,cam_id))
 
     return feature_pickle_filename
 
@@ -113,6 +112,10 @@ def pickle_all_reid_features(work_dirs
         frame_nos = get_frame_nos_track_results(track_results_one_cam["track_results"])
         track_results_df = track_results_one_cam["track_results"]
         cam_id = track_results_one_cam["cam_id"]
+        cam_video_path = os.path.join(dataset_folder,"cam_{}".format(cam_id),"cam_{}.mp4".format(cam_id))
+        video_capture = cv2.VideoCapture(cam_video_path)
+
+
 
         print("Creating features of the track results for cam {}".format(cam_id))
         for frame_no_cam in tqdm(frame_nos):
@@ -121,12 +124,11 @@ def pickle_all_reid_features(work_dirs
 
             xyxy_bboxes = zip(one_frame["xtl"], one_frame["ytl"], one_frame["xbr"], one_frame["ybr"])
 
-            im_path = os.path.join(dataset_folder
-                                   , "cam_{}".format(cam_id)
-                                   , "image_{}_{}.jpg".format(frame_no_cam, cam_id))
+
 
             feature_pickle_filename = get_feature_pickle_path(work_dirs=work_dirs
-                                                              , image_name=os.path.basename(im_path)
+                                                              , frame_no_cam=frame_no_cam
+                                                              , cam_id=cam_id
                                                               , config_basename=config_basename
                                                               , dataset_type=dataset_type)
 
@@ -134,10 +136,16 @@ def pickle_all_reid_features(work_dirs
                 if len(feature_extraction) == 0:
                     feature_extraction.append(Feature_extraction(mc_cfg))
 
+                video_capture.set(cv2.CAP_PROP_POS_FRAMES, frame_no_cam)
 
-                frame_im = mmcv.imread(im_path)
+                ret, frame = video_capture.read()
 
-                features_frame = feature_extraction[0].get_features(xyxy_bboxes, frame_im)
+                if not ret:
+                    raise Exception("Unable to read video frame.")
+
+
+
+                features_frame = feature_extraction[0].get_features(xyxy_bboxes, frame)
                 person_id_to_feature = {}
                 for person_id, feature in zip(one_frame["person_id"], features_frame):
                     person_id_to_feature[person_id] = feature
@@ -227,7 +235,8 @@ class Multi_cam_clustering:
         for track_dict in tqdm(self.person_id_tracks):
 
 
-            feature_mean = self.calculate_track_feature_mean(track_dict,dataset_type)
+            feature_mean = self.calculate_track_feature_mean(track=track_dict
+                                                             ,dataset_type=dataset_type)
             track_dict["feature_mean"] = feature_mean
 
 
@@ -262,7 +271,8 @@ class Multi_cam_clustering:
             frame_no_cam = track_entry["frame_no_cam"]
 
             feature_pickle_name = get_feature_pickle_path(work_dirs=self.work_dirs
-                                                          ,image_name="image_{}_{}.jpg".format(frame_no_cam,cam_id)
+                                                          ,frame_no_cam=frame_no_cam
+                                                          ,cam_id=cam_id
                                                           ,config_basename=self.config_basename
                                                           ,dataset_type=dataset_type)
 
@@ -656,37 +666,6 @@ class Multi_cam_clustering:
                              , pickle_path=cam_homographies_path)
 
 
-    def initialize_multicam_graph(self):
-
-
-        def get_multicam_graph_path():
-            # This is maybe the dataset name of a path: GTA_ext_short/train
-            dataset_base_folder_part_1 = os.path.normpath(self.train_dataset_folder).split(os.sep)[-2]
-
-            # This is maybe the train part of a path: GTA_ext_short/train
-            dataset_base_folder_part_2 = os.path.normpath(self.train_dataset_folder).split(os.sep)[-1]
-
-            overlapping_area_hulls_folder = os.path.join(self.work_dirs
-                                                          , "clustering"
-                                                          , "multicam_graph"
-                                                          , dataset_base_folder_part_1
-                                                          , dataset_base_folder_part_2)
-
-            os.makedirs(overlapping_area_hulls_folder, exist_ok=True)
-
-            cam_homographies_path = osp.join(overlapping_area_hulls_folder, "multicam_graph.pkl")
-
-            return cam_homographies_path
-
-
-        multicam_graph_path = get_multicam_graph_path()
-        self.multicam_graph = create_multicam_graph(self.train_dataset_folder
-                                               , self.work_dirs
-                                               , self.cam_count
-                                               , person_identifier=self.person_identifier
-                                               , pickle_path=multicam_graph_path)
-
-        self.cam_id_to_different_cam_edge_nodes = get_different_cam_edge_nodes(self.multicam_graph)
 
     def overlapping_match_score(self,track1,track2,match_distance_threshold=10):
 
@@ -767,113 +746,6 @@ class Multi_cam_clustering:
         return -match_score
 
 
-
-    def calculate_multicam_graph_distance_score(self,track1,track2):
-
-
-        def get_nearest_node(nodes,track_query_pos):
-
-            query_pos = get_bbox_middle_pos(track_query_pos["bbox"])
-            cam_id = track_query_pos["cam_id"]
-            cache_key = (query_pos,cam_id)
-
-            if cache_key in self.query_pos_cam_id_to_nearest_node:
-                return self.query_pos_cam_id_to_nearest_node[cache_key]
-
-
-
-            min_dist_and_node = (sys.maxsize,None)
-            for node in nodes:
-                new_dist = np.linalg.norm(np.array(node["position"]) - np.array(query_pos))
-
-                min_dist_and_node = min((new_dist,node),min_dist_and_node,key=lambda x: x[0])
-
-            self.query_pos_cam_id_to_nearest_node[cache_key] = min_dist_and_node[1]
-
-            return min_dist_and_node[1]
-
-
-        def get_min_distance_difference(distance_bins,tracks_estimated_distance):
-
-            min_difference_and_dist1_dist2 = (sys.maxsize,0,0)
-            for distance_bin in distance_bins:
-                bin_distance = (distance_bin["max"] + distance_bin["min"]) / 2
-                difference = abs(tracks_estimated_distance-bin_distance)
-                min_difference_and_dist1_dist2 = min((difference,bin_distance,tracks_estimated_distance)
-                                                     ,min_difference_and_dist1_dist2
-                                                     ,key=lambda x:x[0])
-
-            #These two lines will consider that the deviation
-            #of longer distance is larger.
-            longest_distance = max(min_difference_and_dist1_dist2[1],min_difference_and_dist1_dist2[2])
-
-            percentual_difference = min_difference_and_dist1_dist2[0] / longest_distance
-
-            return percentual_difference
-
-
-        def calculate_overall_count_dist_bin(distance_bins):
-            overall_count = 0
-            for distance_bin in distance_bins:
-
-                overall_count += distance_bin["count"]
-
-            return overall_count
-
-        def calculate_transition_probability(connected_nodes,track1_id,track2_id,edge_to_distance_bins):
-
-            overall_transitions = 0
-            for connected_node in connected_nodes:
-                one_edge = (track1_id,connected_node)
-                distance_bins = edge_to_distance_bins[one_edge]
-                overall_transitions += calculate_overall_count_dist_bin(distance_bins)
-
-            found_dist_bins = edge_to_distance_bins[(track1_id,track2_id)]
-
-
-            found_count = calculate_overall_count_dist_bin(found_dist_bins)
-
-            if overall_transitions == 0:
-                return 0
-
-            transition_probability = found_count / overall_transitions
-
-            return transition_probability
-
-
-        track1, track2 = self.make_track1_older_then_track2(track1,track2)
-
-        #Only tracks from different cameras will be targeted by this procedure
-        track1_cam_id = track1[-1]["cam_id"]
-        track2_cam_id = track2[0]["cam_id"]
-        if track1_cam_id == track2_cam_id:
-            return 0
-
-        track1 = get_cluster_tracks_as_list(track1)
-        track2 = get_cluster_tracks_as_list(track2)
-
-
-
-        #If the track is too short it is not possible to calculate a velocity
-        if len(track1) < 2:
-            return 0
-
-        track1_last_pos = track1[-1]
-        track2_first_pos = track2[0]
-
-        track1_cam_nodes = self.cam_id_to_different_cam_edge_nodes[track1_cam_id]
-        track2_cam_nodes = self.cam_id_to_different_cam_edge_nodes[track2_cam_id]
-
-        #The nearest node will now be searched for in the cam that corresponds to each track
-        track1_nearest_node = get_nearest_node(track1_cam_nodes,track1_last_pos)
-        track2_nearest_node = get_nearest_node(track2_cam_nodes,track2_first_pos)
-
-        #if no edge exists between the nodes
-        if track2_nearest_node["node_id"] not in track1_nearest_node["different_cam_nodes"]:
-            return 0
-
-
-        return 1
 
 
     def valid_heap_node(self, heap_node, old_clusters):
