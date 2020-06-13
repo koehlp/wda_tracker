@@ -2,9 +2,8 @@
 
 The WDA (weighted distance aggregation) tracker is an offline multi camera tracking approach.
 
-It is published in the same paper as the MTA Dataset
-(https://github.com/schuar-iosb/mta-dataset). Its purpose is to provide a baseline
-for the MTA Dataset.
+It is published as part of `The MTA Dataset for Multi Target Multi Camera Pedestrian Tracking by Weighted Distance Aggregation`
+(https://github.com/schuar-iosb/mta-dataset). 
 
 
 This repository is structured in **two parts**:  
@@ -32,7 +31,7 @@ Furthermore output result files will be stored in this folder.
 **Download the MTA Dataset**
 
 Go to https://github.com/schuar-iosb/mta-dataset 
-and follow the instructions for obtaining the MTA Dataset. It is also possible to use 
+and follow the instructions to obtain the MTA Dataset. It is also possible to use 
 the smaller extracted version MTA ext short at first. Unzip the dataset somewhere.
 
 **Configure the single camera tracker**
@@ -40,7 +39,7 @@ the smaller extracted version MTA ext short at first. Unzip the dataset somewher
 E.g. in `configs/tracker_configs/frcnn50_new_abd_test.py` and `configs/tracker_configs/frcnn50_new_abd_train.py` 
 set the data -> source -> base_folder to your MTA dataset location.
 
-
+E.g. for the test set:
 ```python
 
 ...
@@ -76,7 +75,7 @@ python run_tracker.py --config configs/tracker_configs/frcnn50_new_abd_test.py
 
 **Configure the multi camera clustering**
 
-Set the following paths of the single camera tracker results in the multi camera clustering config.
+Adjust the following paths of the single camera tracker results in the multi camera clustering config.
 
 E.g. in `configs/clustering_configs/mta_es_abd_non_clean.py`
 
@@ -94,16 +93,40 @@ E.g. in `configs/clustering_configs/mta_es_abd_non_clean.py`
 **Run the multi camera clustering**
 
 Run the following command to start the clustering of single camera tracks which
-have been specified in the config file to obtain multi camera tracks.
+have been specified in the config file. As a result multi camera tracks will be output  and 
+a subsequent evaluation using several tracking metrics will be performed.
+
 ```python
 python run_multi_cam_clustering.py \
     --config configs/clustering_configs/mta_es_abd_non_clean.py
 ```
 
+Several files will be created in the `clustering/config_runs/mta_es_abd_non_clean`
+folder.
+
+```python
+
+
+
+
+```
 
 ## Tracking results
 
 TODO
+
+
+## Development info
+
+If you use pycharm for development, it is neccessary to add the following
+folders as source root. This will add these paths to the python path.
+```python
+['feature_extractors/reid_strong_baseline'
+                      ,'feature_extractors/ABD_Net'
+                        ,'detectors/mmdetection'
+                       ,'evaluation/py_motmetrics']
+```
+
 
 ## Contained repositories
 
