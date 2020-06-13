@@ -95,16 +95,21 @@ class Abd_net_extractor:
 
         with torch.no_grad():
 
-            for img in img_crops:
-                if self.use_gpu:
-                    img = img.cuda()
 
-                img = img.unsqueeze(0)
-                feature = self.model(img)[0]
 
-                feature = feature.cpu().numpy()
+            image_batch = torch.stack(img_crops)
+            #img = img.unsqueeze(0)
 
-                feature = np.reshape(feature,(-1,))
+            if self.use_gpu:
+                image_batch = image_batch.cuda()
+
+            features = self.model(image_batch)[0]
+
+            features = features.cpu().numpy()
+
+            for i in range(features.shape[0]):
+                feature = features[i,:]
+                #feature = np.reshape(feature,(-1,))
                 result.append(feature)
 
         return result

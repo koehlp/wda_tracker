@@ -90,7 +90,7 @@ class Mta_dataset_cam_iterator:
 
 
 if __name__ == "__main__":
-    cfg = mmcv.Config.fromfile("/home/philipp/Documents/repos/wda_tracker/configs/tracker_configs/frcnn50_new_abd.py").root
+    cfg = mmcv.Config.fromfile("/configs/tracker_configs/frcnn50_new_abd_test.py").root
     mta_dataset = Mta_dataset_cam_iterator(cfg=cfg, cam_id=0)
     print("Dataset length {}".format(len(mta_dataset)))
     for dataset_image in mta_dataset:
