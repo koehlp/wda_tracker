@@ -15,8 +15,6 @@ The **second part** can be used to cluster single camera tracks
 to obtain multi camera tracks with subsequent evaluation. Startable via `run_multi_cam_clustering.py`.
 
 
-
-
 ## Getting started
 
 
