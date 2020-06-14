@@ -146,7 +146,7 @@ single_cam_evaluation          #Contains the single camera tracks
 
 There are also some scripts in the utilities folder e.g. to visualize multi camera tracks:
 
-![](readme_files/img_hid_17_oid_1966.jpg)
+![](readme_files/img_hid_31_oid_1934.jpg)
 
 ## Tracking results
 
