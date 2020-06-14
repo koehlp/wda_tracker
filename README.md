@@ -44,7 +44,7 @@ E.g. for the test set:
 
 ...
 "data" : {
-        "selection_interval" : [0,30],
+        "selection_interval" : [0,10000],
 
         "source" : {
             "base_folder" : "/media/philipp/philippkoehl_ssd/MTA_ext_short/test",
@@ -101,19 +101,47 @@ python run_multi_cam_clustering.py \
     --config configs/clustering_configs/mta_es_abd_non_clean.py
 ```
 
-Several files will be created in the `clustering/config_runs/mta_es_abd_non_clean`
-folder.
+Some files for caching and results will be created in the `clustering/config_runs/mta_es_abd_non_clean`
+folder. If you change some code it might be necessary that you delete some of these files.
 
 ```python
-
-
-
+log.txt                        #Contains some log info
+cam_homographies               #Contains calculated homographies between cameras                         
+multicam_clustering_results    #Contains the multi camera clustering tracks
+multicam_distances_and_indices #Contains calculated distances between single camera tracks 
+multi_cam_evaluation           #Contains multi camera evaluation results
+velocity_stats                 #Contains the average velocity of all persons 
+overlapping_area_hulls         #Contains the calculated overlapping areas between all cameras 
+person_id_tracks               #Contains pickled person id to tracks dictionary 
+pickled_appearance_features    #Contains the pickled appearance feature for all frames
+single_cam_evaluation          #Contains the single camera tracks
 
 ```
 
+
+## Other contained scripts
+
+There are also some scripts in the utilities folder e.g. to visualize multi camera tracks:
+
+![](readme_files/img_hid_17_oid_1966.jpg)
+
 ## Tracking results
 
-TODO
+
+- Config files: `frcnn50_new_abd_test.py, frcnn50_new_abd_train.py ,mta_es_abd_non_clean.py`
+    - Person detection: Faster R-CNN ResNet 50 
+    - Person re-identification: ABD-NET ResNet 50
+    - DeepSort Tracker
+    - All distances with the weights in `mta_es_abd_non_clean.py`
+- Dataset
+    - MTA ext short
+
+Results:
+
+| IDF1 | IDP  | IDR  | Rcll | Prcn | GT  | MT  | PT | ML | FP    | FN     | IDs  | FM   | MOTA | MOTP | 
+|------|------|------|------|------|-----|-----|----|----|-------|--------|------|------|------|------| 
+| 0.40 | 0.44 | 0.37 | 0.83 | 0.98 | 188 | 123 | 64 | 1  | 14723 | 124852 | 1846 | 7140 | 0.80 | 0.18 | 
+
 
 
 ## Development info
@@ -149,6 +177,8 @@ For evaluation the py-motmetrics is contained (https://github.com/cheind/py-motm
 An approach for getting distinct colors is used:
 
 (https://github.com/taketwo/glasbey).
+
+Some scripts from the JTA-Dataset (https://github.com/fabbrimatteo/JTA-Dataset) are also contained.
 
 ## Citation
 

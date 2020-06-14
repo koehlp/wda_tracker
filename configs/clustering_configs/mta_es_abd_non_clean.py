@@ -65,7 +65,7 @@ root = {
                 "are_tracks_cam_id_frame_disjunct": 1
                 ,"are_tracks_frame_overlap_disjunct": 1
                 ,"overlapping_match_score": 1.8
-                ,"feature_mean_distance":4.5
+                ,"feature_mean_distance":2.5
                 ,"track_pred_pos_start_distance" : 0.325
 
                 }
