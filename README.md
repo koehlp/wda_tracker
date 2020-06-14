@@ -21,12 +21,37 @@ to obtain multi camera tracks with subsequent evaluation. Startable via `run_mul
 
 
 **Setting up an artefacts folder**  
-Download work_dirs.zip and unzip it in your base repository folder or create a symlink e.g. 
-`ln -s your/path/work_dirs your/path/wda_tracker/work_dirs`. 
+Download work_dirs.zip (https://drive.google.com/uc?export=download&id=1SMlrtuGsgZ-DMZlIlUThgEpXQI9MOWrL) and unzip it in your base repository folder or create a symlink e.g. 
+`ln -s /media/philipp/philippkoehl_ssd/work_dirs work_dirs`. 
 It contains one or two re-id and detector models.
 Furthermore output result files will be stored in this folder.
 
+**Install python requirements**
 
+Create a new conda environment:
+
+```shell script
+conda create -n wda python=3.7.7 -y
+```
+Activate the conda environment:
+```shell script
+conda activate wda
+```
+Install all needed python packages into the environment:
+```shell script
+pip install -r requirements.txt
+```
+
+Go into `detectors/mmdetection`
+
+and build mmdetection (https://github.com/open-mmlab/mmdetection/blob/master/docs/install.md)
+
+```shell script
+pip install -r requirements/build.txt
+pip install "git+https://github.com/open-mmlab/cocoapi.git#subdirectory=pycocotools"
+pip install -v -e .  # or "python setup.py develop"
+```
+ 
 
 **Download the MTA Dataset**
 
