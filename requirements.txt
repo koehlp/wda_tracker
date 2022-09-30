@@ -2,7 +2,7 @@ addict==2.2.1
 certifi==2019.11.28
 cycler==0.10.0
 Cython==0.29.16
-joblib==0.14.1
+joblib==1.2.0
 kiwisolver==1.1.0
 lapsolver==1.1.0
 matplotlib==3.2.1
